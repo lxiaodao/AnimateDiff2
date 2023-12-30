@@ -8,6 +8,7 @@ ossutil_output/
 .vscode/
 
 scripts/
+model3/
 !scripts/animate.py
 
 
