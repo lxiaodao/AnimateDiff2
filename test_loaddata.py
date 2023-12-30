@@ -1,0 +1,66 @@
+# coding=utf-8
+# Copyright 2023 The HuggingFace Inc. team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Fine-tuning script for Stable Diffusion for text2image with support for LoRA."""
+
+import argparse
+import logging
+import math
+import os
+import random
+import shutil
+from pathlib import Path
+
+import datasets
+import numpy as np
+import torch
+import torch.nn.functional as F
+import torch.utils.checkpoint
+import transformers
+from accelerate import Accelerator
+from accelerate.logging import get_logger
+from accelerate.utils import ProjectConfiguration, set_seed
+from datasets import load_dataset
+from huggingface_hub import create_repo, upload_folder
+from packaging import version
+from torchvision import transforms
+from tqdm.auto import tqdm
+from transformers import CLIPTextModel, CLIPTokenizer
+from omegaconf import OmegaConf
+from einops import rearrange
+
+import diffusers
+from diffusers import AutoencoderKL, DDPMScheduler, DiffusionPipeline
+from diffusers.loaders import AttnProcsLayers
+from diffusers.models.attention_processor import LoRAAttnProcessor
+from animatediff.models.unet import UNet3DConditionModel
+from diffusers.optimization import get_scheduler
+from diffusers.utils import check_min_version, is_wandb_available
+from diffusers.utils.import_utils import is_xformers_available
+
+from animatediff.pipelines.pipeline_animation import AnimationPipeline
+
+# Will error if the minimal version of diffusers is not installed. Remove at your own risks.
+#check_min_version("0.21.0.dev0")
+
+def main():
+    
+
+     dataset = load_dataset("imagefolder", data_dir="model3")
+     print(dataset["train"][0])
+
+
+
+if __name__ == "__main__":
+    main()
