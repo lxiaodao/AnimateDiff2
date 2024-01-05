@@ -55,14 +55,18 @@ from diffusers.loaders import LoraLoaderMixin
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
 #check_min_version("0.21.0.dev0")
 
+import torch
+from diffusers import StableDiffusionPipeline, UniPCMultistepScheduler
 
-def main():
- 
-     LoraLoaderMixin.load_lora_weights
-     dataset = load_dataset("imagefolder", data_dir="model3")
-     print(dataset["train"][0])
+pipe = StableDiffusionPipeline.from_pretrained(
+    "runwayml/stable-diffusion-v1-5",
+    torch_dtype=torch.float16,
+    use_safetensors=True,
+)
+pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
+pipe = pipe.to("cuda")
+prompt = "a beautiful landscape photograph"
+pipe.enable_vae_tiling()
+pipe.enable_xformers_memory_efficient_attention()
 
-
-
-if __name__ == "__main__":
-    main()
+image = pipe([prompt], width=3840, height=2224, num_inference_steps=20).images[0]

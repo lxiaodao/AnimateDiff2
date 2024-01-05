@@ -44,6 +44,8 @@ import diffusers
 from diffusers import AutoencoderKL, DDPMScheduler, DiffusionPipeline
 from diffusers.loaders import AttnProcsLayers
 from diffusers.models.attention_processor import LoRAAttnProcessor
+#LoRAXFormersAttnProcessor
+from diffusers.models.attention_processor import YangLoRAXFormersAttnProcessor,LoRAXFormersAttnProcessor,XFormersAttnProcessor
 from animatediff.models.unet import UNet3DConditionModel
 from diffusers.optimization import get_scheduler
 from diffusers.utils import check_min_version, is_wandb_available
@@ -505,7 +507,11 @@ def main():
         elif name.startswith("down_blocks"):
             block_id = int(name[len("down_blocks.")])
             hidden_size = unet.config.block_out_channels[block_id]
-
+        
+        # by yang 2024-1-3 want use xformers but LoRAAttnProcessor not
+        # LoRAXFormersAttnProcessor in not work 
+        # YangLoRAXFormersAttnProcessor to analysize
+            
         lora_attn_procs[name] = LoRAAttnProcessor(
             hidden_size=hidden_size,
             cross_attention_dim=cross_attention_dim,
@@ -849,8 +855,9 @@ def main():
                 global_step += 1
                 accelerator.log({"train_loss": train_loss}, step=global_step)
                 train_loss = 0.0
-
+                logger.info(f"---current global_step---:{global_step}")
                 if global_step % args.checkpointing_steps == 0:
+                    logger.info(f"---save global_step---:{global_step}")
                     if accelerator.is_main_process:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
                         if args.checkpoints_total_limit is not None:

@@ -35,7 +35,7 @@ from ..utils.freeinit_utils import (
 )
 
 from diffusers.utils import (
-    USE_PEFT_BACKEND,
+    USE_PEFT_BACKEND,   # what this？
     deprecate,
     logging,
     replace_example_docstring,
