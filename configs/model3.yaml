@@ -1,0 +1,33 @@
+pretrained_model_path: C:/Users/Administrator/Downloads/stable-diffusion-v1-5
+motion_module: C:/workspaces/stable-diffusion-webui/extensions/sd-webui-animatediff/model/mm_sd_v15.ckpt
+output_dir: outputs/model3
+train_data:
+  video_path: model3/model3-1.mp4
+  prompt: model3 pose, a woman in a black dress with a beaded collar and sleeves, standing in a white room with a white wall
+  n_sample_frames: 16
+  width: 720
+  height: 960
+  sample_start_idx: 0
+  sample_frame_rate: 1
+validation_data:
+  prompts:
+  - model3 pose, a woman in a black dress with a beaded collar and sleeves, standing in a white room with a white wall
+  video_length: 16
+  width: 720
+  height: 960
+  num_inference_steps: 20
+  guidance_scale: 12.5
+  use_inv_latent: true
+  num_inv_steps: 50
+learning_rate: 3.0e-05
+train_batch_size: 1
+max_train_steps: 500
+checkpointing_steps: 500
+validation_steps: 100
+trainable_modules:
+- to_q
+seed: 33
+mixed_precision: fp16
+use_8bit_adam: false
+gradient_checkpointing: true
+enable_xformers_memory_efficient_attention: true

@@ -57,7 +57,7 @@ from diffusers.loaders import LoraLoaderMixin
 
 
 def main():
- 
+     
      LoraLoaderMixin.load_lora_weights
      dataset = load_dataset("imagefolder", data_dir="model3")
      print(dataset["train"][0])
@@ -65,4 +65,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    #main()
+     print(f"---this is------{100%500}")

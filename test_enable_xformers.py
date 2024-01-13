@@ -58,6 +58,8 @@ from diffusers.loaders import LoraLoaderMixin
 import torch
 from diffusers import StableDiffusionPipeline, UniPCMultistepScheduler
 
+from xformers.ops import MemoryEfficientAttentionFlashAttentionOp
+
 pipe = StableDiffusionPipeline.from_pretrained(
     "runwayml/stable-diffusion-v1-5",
     torch_dtype=torch.float16,

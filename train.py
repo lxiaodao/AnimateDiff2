@@ -25,12 +25,13 @@ from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
 
 from animatediff.models.unet import UNet3DConditionModel
-from tuneavideo.data.frames_dataset import FramesDataset
+#from tuneavideo.data.frames_dataset import FramesDataset
 from tuneavideo.data.multi_dataset import MultiTuneAVideoDataset
 from animatediff.pipelines.pipeline_animation import AnimationPipeline
 from tuneavideo.util import save_videos_grid, ddim_inversion
 from einops import rearrange, repeat
 
+import inspect
 
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
 check_min_version("0.10.0.dev0")
@@ -74,7 +75,9 @@ def main(
     motion_module_pe_multiplier: int = 1,
     dataset_class: str = 'MultiTuneAVideoDataset',
 ):
-    *_, config = inspect.getargvalues(inspect.currentframe())
+    #*_, config = inspect.getargvalues(inspect.currentframe())
+    *_, func_args = inspect.getargvalues(inspect.currentframe())
+    func_args = dict(func_args)
 
     inference_config = OmegaConf.load(inference_config_path)
 
@@ -108,7 +111,8 @@ def main(
         os.makedirs(output_dir, exist_ok=True)
         os.makedirs(f"{output_dir}/samples", exist_ok=True)
         os.makedirs(f"{output_dir}/inv_latents", exist_ok=True)
-        OmegaConf.save(config, os.path.join(output_dir, 'config.yaml'))
+        # there is no config object
+        OmegaConf.save(func_args, os.path.join(output_dir, 'config.yaml'))
 
     # Load scheduler, tokenizer and models.
     noise_scheduler = DDPMScheduler.from_pretrained(pretrained_model_path, subfolder="scheduler")
@@ -190,8 +194,9 @@ def main(
                 prompt,max_length=tokenizer.model_max_length, padding="max_length", truncation=True, return_tensors="pt"
             ).input_ids[0]
     else:
-        train_dataset = FramesDataset(tokenizer=tokenizer, **train_data)
-        train_dataset.load()
+        #train_dataset = FramesDataset(tokenizer=tokenizer, **train_data)
+        #train_dataset.load()
+        logger.error("---there is no FramesDataset---")
 
     # DataLoaders creation:
     train_dataloader = torch.utils.data.DataLoader(
@@ -367,7 +372,8 @@ def main(
 
                         for idx, prompt in enumerate(set(validation_data.prompts)):
                             sample = validation_pipeline(prompt, generator=generator,
-                                                         latents=ddim_inv_latent,
+                                                         latents=ddim_inv_latent,                                                         
+                                                         temporal_context=validation_data.video_length, # what is temporal_context
                                                          fp16=True,
                                                          **validation_data).videos
                             save_videos_grid(sample, f"{output_dir}/samples/sample-{global_step}/{idx}.gif")

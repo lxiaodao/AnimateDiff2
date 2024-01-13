@@ -51,7 +51,6 @@ from diffusers.optimization import get_scheduler
 from diffusers.utils import check_min_version, is_wandb_available
 from diffusers.utils.import_utils import is_xformers_available
 
-import inspect
 from animatediff.pipelines.pipeline_animation import AnimationPipeline
 
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
@@ -399,10 +398,6 @@ def main():
     args = parse_args()
     logging_dir = Path(args.output_dir, args.logging_dir)
 
-
-    *_, func_args = inspect.getargvalues(inspect.currentframe())
-    func_args = dict(func_args)
-
     inference_config = OmegaConf.load(args.inference_config_path)
 
     accelerator_project_config = ProjectConfiguration(project_dir=args.output_dir, logging_dir=logging_dir)
@@ -452,6 +447,8 @@ def main():
     tokenizer = CLIPTokenizer.from_pretrained(
         args.pretrained_model_name_or_path, subfolder="tokenizer", revision=args.revision
     )
+
+    ##
     text_encoder = CLIPTextModel.from_pretrained(
         args.pretrained_model_name_or_path, subfolder="text_encoder", revision=args.revision
     )
@@ -464,7 +461,7 @@ def main():
     )
 
     motion_module_state_dict = torch.load(args.motion_module, map_location="cpu")
-    if "global_step" in motion_module_state_dict: func_args.update({"global_step": motion_module_state_dict["global_step"]})
+    if "global_step" in motion_module_state_dict: args.update({"global_step": motion_module_state_dict["global_step"]})
     missing, unexpected = unet.load_state_dict(motion_module_state_dict, strict=False)
     assert len(unexpected) == 0
 
@@ -967,50 +964,7 @@ def main():
                 ignore_patterns=["step_*", "epoch_*"],
             )
 
-    # Final inference
-    # Load previous pipeline
-    pipeline = AnimationPipeline.from_pretrained(
-        args.pretrained_model_name_or_path,
-        text_encoder=text_encoder,
-        vae=vae,
-        unet=unet,
-    )
-    pipeline = pipeline.to(accelerator.device)
-
-    # load attention processors
-    pipeline.unet.load_attn_procs(args.output_dir)
-
-    # run inference
-    generator = torch.Generator(device=accelerator.device)
-    if args.seed is not None:
-        generator = generator.manual_seed(args.seed)
-    images = []
-    for _ in range(args.num_validation_images):
-        images.append(pipeline(
-            args.validation_prompt,
-            num_inference_steps=30,
-            generator=generator,
-            temporal_context=args.video_length,
-            video_length=args.video_length,
-            fp16=accelerator.mixed_precision == "fp16" ,
-        ).videos[0])
-
-    if accelerator.is_main_process:
-        for tracker in accelerator.trackers:
-            if len(images) != 0:
-                if tracker.name == "tensorboard":
-                    np_images = np.stack([np.asarray(img) for img in images[0]])
-                    tracker.writer.add_images("test", np_images, epoch, dataformats="NHWC")
-                if tracker.name == "wandb":
-                    tracker.log(
-                        {
-                            "test": [
-                                wandb.Image(image, caption=f"{i}: {args.validation_prompt}")
-                                for i, image in enumerate(images)
-                            ]
-                        }
-                    )
-
+    
     accelerator.end_training()
 
 

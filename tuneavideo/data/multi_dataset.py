@@ -9,8 +9,8 @@ from einops import rearrange
 class MultiTuneAVideoDataset(Dataset):
     def __init__(
             self,
-            video_path: Union[str, list[str]],
-            prompt: Union[str, list[str]],
+            video_path: str,
+            prompt: str,
             width: int = 512,
             height: int = 512,
             n_sample_frames: int = 8,
